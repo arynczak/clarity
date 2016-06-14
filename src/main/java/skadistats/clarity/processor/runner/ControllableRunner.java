@@ -36,6 +36,12 @@ public class ControllableRunner extends AbstractRunner<ControllableRunner> {
         @Override
         public LoopController.Command doLoopControl(Context ctx, int nextTickWithData) {
             try {
+                if (!loopController.isSyncTickSeen()) {
+                    if (tick == -1) {
+                        startNewTick(ctx, 0);
+                    }
+                    return LoopController.Command.FALLTHROUGH;
+                }
                 upcomingTick = nextTickWithData;
                 if (upcomingTick == tick) {
                     return LoopController.Command.FALLTHROUGH;
@@ -71,17 +77,12 @@ public class ControllableRunner extends AbstractRunner<ControllableRunner> {
         }
 
         private void handleDemandedTick() throws IOException {
-            if (tick < 0) {
-                wantedTick = 0;
-                setTick(tick + 1);
-            } else {
-                wantedTick = demandedTick;
-                demandedTick = null;
-                int diff = wantedTick - tick;
-                if (diff < 0 || diff > 200) {
-                    calculateResetSteps();
-                    loopController.controllerFunc = seekLoopControl;
-                }
+            wantedTick = demandedTick;
+            demandedTick = null;
+            int diff = wantedTick - tick;
+            if (diff < 0 || diff > 200) {
+                calculateResetSteps();
+                loopController.controllerFunc = seekLoopControl;
             }
         }
     };
@@ -192,7 +193,7 @@ public class ControllableRunner extends AbstractRunner<ControllableRunner> {
 
     public ControllableRunner(Source s) throws IOException {
         super(s, s.readEngineType());
-        resetRelevantPackets.add(PacketPosition.createPacketPosition(engineType.getInitialTick(), Demo.EDemoCommands.DEM_SyncTick_VALUE, s.getPosition()));
+        resetRelevantPackets.add(PacketPosition.createPacketPosition(-1, Demo.EDemoCommands.DEM_SyncTick_VALUE, s.getPosition()));
         upcomingTick = tick;
         wantedTick = tick;
         this.loopController = new LockingLoopController(normalLoopControl);

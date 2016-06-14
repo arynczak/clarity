@@ -206,7 +206,7 @@ public class Entities {
                 entityIndex = deletions[i];
                 entity = entities[entityIndex];
                 if (entity != null) {
-                    log.warn("entity at index {} was ACTUALLY found when ordered to delete, tell the press!", entityIndex);
+                    log.debug("entity at index {} was ACTUALLY found when ordered to delete, tell the press!", entityIndex);
                     if (entity.isActive()) {
                         entity.setActive(false);
                         if (evLeft != null) {
@@ -217,7 +217,7 @@ public class Entities {
                         evDeleted.raise(entity);
                     }
                 } else {
-                    //log.warn("entity at index {} was not found when ordered to delete.", entityIndex);
+                    log.debug("entity at index {} was not found when ordered to delete.", entityIndex);
                 }
                 entities[entityIndex] = null;
             }
@@ -232,7 +232,7 @@ public class Entities {
     private Object[] getBaseline(DTClasses dtClasses, int clsId) {
         BaselineEntry be = baselineEntries.get(clsId);
         if (be == null) {
-            throw new RuntimeException(String.format("Baseline for class {} ({}) not found.", dtClasses.forClassId(clsId).getDtName(), clsId));
+            throw new RuntimeException(String.format("Baseline for class %s (%d) not found.", dtClasses.forClassId(clsId).getDtName(), clsId));
         }
         if (be.baseline == null) {
             DTClass cls = dtClasses.forClassId(clsId);
